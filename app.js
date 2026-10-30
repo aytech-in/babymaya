@@ -8,37 +8,37 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 var T={
  en:{eyebrow:'Aytekin family · baby update',
   s:{waiting:{h:'Still waiting for our little girl.',p:'She is taking her sweet time. There is no news yet, and we will update this page the moment there is.'},
-     labor:{h:'It has begun.',p:'Contractions have started. We are on our way to meeting her.'},
      hospital:{h:'We are at the hospital.',p:'Bag packed, hands held. We will post here the moment she arrives.'},
      born:{h:'She is here.',p:'Our daughter has arrived. Thank you for every message and all the love.'}},
-  j:{waiting:'Waiting',labor:'Labor',hospital:'Hospital',born:'Born'},
+  j:{waiting:'Waiting',hospital:'Hospital',born:'Born'},
   upd:'Updated',note:'A note from us',welcome:'Welcome,',
   b:{name:'Name',at:'Born',weight:'Weight',length:'Length'},
   due:{past:function(n){return n===1?'1 day past the due date':n+' days past the due date';},today:'Due date is today',until:function(n){return n===1?'1 day until the due date':n+' days until the due date';}},
+  hint:function(n){return 'Her name will be '+n+'.';},
   foot:'Check back any time. We update this page ourselves.'},
  tr:{eyebrow:'Aytekin ailesi · bebek haberi',
   s:{waiting:{h:'Küçük kızımızı bekliyoruz.',p:'Kendi zamanında gelecek. Henüz yeni bir haber yok, olur olmaz bu sayfayı güncelleyeceğiz.'},
-     labor:{h:'Başladı!',p:'Sancılar başladı. Onunla tanışmaya doğru yola çıktık.'},
      hospital:{h:'Hastanedeyiz.',p:'Çanta hazır, eller kenetli. Geldiği an buradan haber vereceğiz.'},
      born:{h:'Geldi!',p:'Kızımız dünyaya geldi. Her mesaj ve tüm sevginiz için çok teşekkürler.'}},
-  j:{waiting:'Bekleyiş',labor:'Sancı',hospital:'Hastane',born:'Doğum'},
+  j:{waiting:'Bekleyiş',hospital:'Hastane',born:'Doğum'},
   upd:'Güncelleme',note:'Bizden bir not',welcome:'Hoş geldin,',
   b:{name:'İsim',at:'Doğum',weight:'Kilo',length:'Boy'},
   due:{past:function(n){return 'Tahmini tarihten '+n+' gün sonra';},today:'Tahmini doğum tarihi bugün',until:function(n){return 'Tahmini tarihe '+n+' gün var';}},
+  hint:function(n){return 'Adı '+n+' olacak.';},
   foot:'İstediğiniz zaman tekrar bakabilirsiniz. Sayfayı biz güncelliyoruz.'},
  de:{eyebrow:'Familie Aytekin · Baby-Neuigkeiten',
   s:{waiting:{h:'Wir warten noch auf unsere Kleine.',p:'Sie lässt sich Zeit. Es gibt noch keine Neuigkeiten. Sobald es soweit ist, steht es hier.'},
-     labor:{h:'Es geht los!',p:'Die Wehen haben begonnen. Wir sind auf dem Weg, sie kennenzulernen.'},
      hospital:{h:'Wir sind im Krankenhaus.',p:'Tasche gepackt, Hände gehalten. Sobald sie da ist, melden wir uns hier.'},
      born:{h:'Sie ist da!',p:'Unsere Tochter ist auf der Welt. Danke für jede Nachricht und all die Liebe.'}},
-  j:{waiting:'Warten',labor:'Wehen',hospital:'Klinik',born:'Geboren'},
+  j:{waiting:'Warten',hospital:'Klinik',born:'Geboren'},
   upd:'Aktualisiert',note:'Eine Notiz von uns',welcome:'Willkommen,',
   b:{name:'Name',at:'Geboren',weight:'Gewicht',length:'Größe'},
   due:{past:function(n){return n===1?'1 Tag über dem Termin':n+' Tage über dem Termin';},today:'Heute ist der errechnete Termin',until:function(n){return n===1?'Noch 1 Tag bis zum Termin':'Noch '+n+' Tage bis zum Termin';}},
+  hint:function(n){return 'Sie wird '+n+' heißen.';},
   foot:'Schaut jederzeit wieder vorbei. Wir aktualisieren die Seite selbst.'}
 };
 var LOC={en:'en-GB',tr:'tr-TR',de:'de-DE'};
-var ORDER=['waiting','labor','hospital','born'];
+var ORDER=['waiting','hospital','born'];
 
 var S=normalize(null);
 
@@ -90,6 +90,7 @@ function render(st){
   var u=st.updated?fmtUpdated(st.updated):'';
   if(u){chips+='<div class="chip"><span>'+esc(t.upd)+'</span> '+esc(u)+' <span id="rel">· '+esc(relTime(st.updated))+'</span></div>';}
   var welcome=(st.status==='born'&&b.name)?'<p class="welcome">'+esc(t.welcome)+' <em>'+esc(b.name)+'</em></p>':'';
+  var nm=(st.nameHint&&st.status!=='born')?'<p class="babyname"><i aria-hidden="true"></i><span>'+esc(st.nameHint)+'</span><i aria-hidden="true"></i></p>':'';
   var note=st.note?'<div class="note"><small>'+esc(t.note)+'</small><p>'+esc(st.note)+'</p></div>':'';
   var tiles='';
   if(st.status==='born'){
@@ -105,7 +106,7 @@ function render(st){
    '<main class="wrap">'+
     '<header class="top"><div class="eyebrow"><span class="live"></span><span>'+esc(t.eyebrow)+'</span></div>'+
     '<nav class="lang" aria-label="Language">'+['tr','de','en'].map(function(l){return '<button type="button" data-l="'+l+'" aria-pressed="'+(l===lang)+'">'+l.toUpperCase()+'</button>';}).join('')+'</nav></header>'+
-    '<section class="hero"><h1>'+words+'</h1><p class="sub">'+esc(sc.p)+'</p>'+welcome+'<div class="chips">'+chips+'</div>'+note+tiles+'</section>'+
+    '<section class="hero"><h1>'+words+'</h1><p class="sub">'+esc(sc.p)+'</p>'+nm+welcome+'<div class="chips">'+chips+'</div>'+note+tiles+'</section>'+
     '<ol class="journey">'+journey+'</ol>'+
     '<p class="foot">'+esc(t.foot)+'</p>'+
    '</main>';
@@ -129,8 +130,7 @@ var reduce=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').
 
 var SCENES={
  waiting:{top:[7,10,32],mid:[18,24,74],bot:[44,32,92],orb:[255,214,150],n1:[70,60,170],n2:[150,70,150],rock:.075,speed:.85,glow:1,dust:6,beat:0,ring:0,dawn:0,shoot:.12},
- labor:{top:[10,6,30],mid:[34,14,78],bot:[92,28,92],orb:[255,150,176],n1:[120,40,160],n2:[220,70,120],rock:.13,speed:1.7,glow:1.25,dust:14,beat:1,ring:1,dawn:.08,shoot:.2},
- hospital:{top:[6,16,36],mid:[14,46,90],bot:[36,96,130],orb:[190,236,255],n1:[30,110,170],n2:[80,70,170],rock:.05,speed:1,glow:1.3,dust:10,beat:.35,ring:.5,dawn:.12,shoot:.2},
+ hospital:{top:[8,10,36],mid:[22,36,96],bot:[70,50,120],orb:[255,196,210],n1:[60,100,190],n2:[200,80,140],rock:.1,speed:1.5,glow:1.3,dust:14,beat:1,ring:1,dawn:.1,shoot:.2},
  born:{top:[28,22,84],mid:[96,50,128],bot:[196,104,118],orb:[255,232,170],n1:[255,120,150],n2:[255,190,110],rock:.06,speed:.9,glow:1.8,dust:22,beat:0,ring:0,dawn:1,shoot:.35}
 };
 var NUM=['rock','speed','glow','dust','beat','ring','dawn','shoot'];
@@ -377,9 +377,9 @@ function frame(ms){
 
 /* ---------- boot ---------- */
 function normalize(o){
-  var s=(o&&typeof o==='object')?o:{};
+  var s=(o&&typeof o==='object')?o:{nameHint:'Maya'};
   if(ORDER.indexOf(s.status)<0){s.status='waiting';}
-  s.note=s.note||'';s.due=s.due||'';s.updated=s.updated||'';
+  s.note=s.note||'';s.due=s.due||'';s.updated=s.updated||'';s.nameHint=s.nameHint||'';
   s.born=(s.born&&typeof s.born==='object')?s.born:{};
   return s;
 }
@@ -389,20 +389,22 @@ function apply(o){
   if(key===lastKey){return;}
   lastKey=key;S=n;render(S);setScene(S.status);
 }
-function load(first){
-  fetch('status.json?t='+Date.now(),{cache:'no-store'})
-    .then(function(r){if(!r.ok){throw new Error(r.status);}return r.json();})
-    .then(apply)
-    .catch(function(){if(first){apply(null);}});
-}
-var pv=/[?&]preview=(waiting|labor|hospital|born)/.exec(location.search);
+var pv=/[?&]preview=(waiting|hospital|born)/.exec(location.search);
+var fbSeen=false;
+/* data.js calls this with the live Firestore document */
+window.__applyStatus=function(o,live){
+  if(pv){return;}
+  if(live){fbSeen=true;try{localStorage.setItem('ba-last',JSON.stringify(o||null));}catch(e){}}
+  apply(o);
+};
 if(pv){
-  apply({status:pv[1],note:'Preview only. This is not the real status.',due:'',updated:new Date().toISOString(),
-    born:{name:'Her name',at:'2026-11-01T03:12',weight:'3.4 kg',length:'51 cm'}});
+  apply({status:pv[1],note:'Preview only. This is not the real status.',due:'',nameHint:'Maya',updated:new Date().toISOString(),
+    born:{name:'Maya',at:'2026-11-01T03:12',weight:'3.4 kg',length:'51 cm'}});
 }else{
-  load(true);
-  setInterval(function(){if(!document.hidden){load(false);}},45000);
-  document.addEventListener('visibilitychange',function(){if(!document.hidden){load(false);}});
+  var cached=null;
+  try{cached=JSON.parse(localStorage.getItem('ba-last')||'null');}catch(e){}
+  if(cached){apply(cached);}
+  setTimeout(function(){if(!fbSeen&&!cached){apply(null);}},6000);
 }
 requestAnimationFrame(frame);
 })();
