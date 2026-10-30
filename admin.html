@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#080b24">
+<title>Baby Aytekin Admin</title>
+<style>
+:root{--night:#080b24;--panel:#10153d;--field:#0b0f30;--moon:#f6e8c6;--ember:#ffb487;--rose:#ff8aa9;--mist:#aab3ea;--fg:#f7efde;--dim:#c7cbee;--line:rgba(170,179,234,.3);color-scheme:dark}
+*{box-sizing:border-box}
+html{background:var(--night)}
+body{margin:0;background:radial-gradient(120% 80% at 50% 0%,#1a2060 0%,var(--night) 60%);min-height:100svh;color:var(--fg);font:400 1rem/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;
+  padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:540px;margin-inline:auto;display:flex;flex-direction:column;gap:1rem}
+h1{margin:0;font:600 1.6rem/1.15 Georgia,serif}
+h2{margin:0 0 .6rem;font:600 1.05rem system-ui,sans-serif}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:1rem}
+p{margin:.3rem 0}
+.dim{color:var(--dim);font-size:.9rem}
+label{display:block;margin:.8rem 0 .3rem;font:500 .72rem ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--mist)}
+input,textarea{display:block;width:100%;min-width:0;max-width:100%;background:var(--field);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:.75rem .85rem;font:400 16px/1.4 system-ui,sans-serif}
+textarea{resize:vertical}
+:focus-visible{outline:2px solid var(--ember);outline-offset:3px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.grid .full{grid-column:1/-1}
+.status button{min-height:56px;padding:.6rem .8rem;border-radius:14px;border:1px solid var(--line);background:var(--field);color:var(--fg);font:600 .95rem system-ui,sans-serif;text-align:left;cursor:pointer}
+.status button[aria-pressed="true"]{border-color:var(--ember);background:rgba(255,180,135,.14);color:var(--moon)}
+.primary{width:100%;min-height:54px;margin-top:1rem;border:0;border-radius:14px;background:linear-gradient(135deg,var(--ember),var(--rose));color:#2a1230;font:700 1.05rem system-ui,sans-serif;cursor:pointer}
+.primary:disabled{opacity:.6;cursor:default}
+.ghost{background:none;border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:.5rem .95rem;min-height:40px;font:inherit;font-size:.9rem;cursor:pointer}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.links a{color:var(--ember);font-size:.92rem}
+#msg{min-height:1.4em;color:var(--ember);font-size:.95rem;margin-top:.7rem}
+#msg.ok{color:#9be7b0}
+.top{display:flex;justify-content:space-between;align-items:center;gap:1rem}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <h1>Baby Aytekin<br><span class="dim" style="font:400 .95rem system-ui,sans-serif">Update the page</span></h1>
+    <a class="ghost" id="viewlink" href="index.html" style="text-decoration:none;color:inherit;display:inline-flex;align-items:center">View page</a>
+  </div>
+
+  <section class="card" id="setup" hidden>
+    <h2>One-time setup</h2>
+    <p class="dim">Paste a GitHub token that can only edit this one repository (steps are in the README). It stays on this device and is only sent to api.github.com.</p>
+    <div class="grid">
+      <div><label for="owner">GitHub user</label><input id="owner" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+      <div><label for="repo">Repository</label><input id="repo" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+      <div><label for="branch">Branch</label><input id="branch" value="main" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+      <div><label for="token">Token</label><input id="token" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="github_pat_..."></div>
+    </div>
+    <button class="primary" id="connect" type="button">Save and load status</button>
+  </section>
+
+  <section class="card" id="editor" hidden>
+    <h2>Status</h2>
+    <div class="grid status" id="statusbtns">
+      <button type="button" data-s="waiting">Still waiting</button>
+      <button type="button" data-s="labor">Labor started</button>
+      <button type="button" data-s="hospital">At the hospital</button>
+      <button type="button" data-s="born">She is here</button>
+    </div>
+
+    <label for="note">Short note (optional)</label>
+    <textarea id="note" rows="2" maxlength="160" placeholder="For example: Contractions every 8 minutes since 14:30"></textarea>
+
+    <label for="due">Due date (shows days past or to go)</label>
+    <input type="date" id="due">
+
+    <div class="grid" id="bornbox" hidden>
+      <div class="full"><label for="bname">Her name</label><input id="bname" maxlength="40" autocomplete="off"></div>
+      <div class="full"><label for="bat">Born at</label><input type="datetime-local" id="bat"></div>
+      <div><label for="bweight">Weight</label><input id="bweight" maxlength="16" placeholder="3.4 kg"></div>
+      <div><label for="blength">Length</label><input id="blength" maxlength="16" placeholder="51 cm"></div>
+    </div>
+
+    <button class="primary" id="publish" type="button">Publish update</button>
+    <p id="msg" role="status"></p>
+  </section>
+
+  <section class="card" id="previews" hidden>
+    <h2>Preview the scenes</h2>
+    <p class="dim">These open the page with sample data. Nothing is published.</p>
+    <p class="links"><a href="index.html?preview=waiting">Waiting</a> · <a href="index.html?preview=labor">Labor</a> · <a href="index.html?preview=hospital">Hospital</a> · <a href="index.html?preview=born">She is here</a></p>
+  </section>
+
+  <div class="row" id="footer" hidden><button class="ghost" id="signout" type="button">Remove token from this device</button></div>
+</main>
+
+<script>
+(function(){
+'use strict';
+function $(s){return document.querySelector(s);}
+var KEY='baby-aytekin-admin';
+var cfg={owner:'',repo:'',branch:'main',token:''};
+try{var sv=JSON.parse(localStorage.getItem(KEY)||'{}');for(var k in sv){if(sv.hasOwnProperty(k)){cfg[k]=sv[k];}}}catch(e){}
+var m=/^([^.]+)\.github\.io$/.exec(location.hostname);
+if(m&&!cfg.owner){cfg.owner=m[1];}
+var seg=location.pathname.split('/').filter(Boolean)[0];
+if(m&&seg&&seg.indexOf('.')<0&&!cfg.repo){cfg.repo=seg;}
+
+var sel='waiting',sha=null,base={};
+
+function utf8enc(s){return btoa(unescape(encodeURIComponent(s)));}
+function utf8dec(b){return decodeURIComponent(escape(atob(String(b).replace(/\s/g,''))));}
+function msg(t,ok){var el=$('#msg');el.textContent=t||'';el.className=ok?'ok':'';}
+function berlinNow(){try{return new Date().toLocaleString('sv-SE',{timeZone:'Europe/Berlin'}).slice(0,16).replace(' ','T');}catch(e){return '';}}
+
+function api(path,opt){
+  opt=opt||{};
+  opt.headers=Object.assign({'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','Authorization':'Bearer '+cfg.token},opt.headers||{});
+  return fetch('https://api.github.com/repos/'+encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo)+path,opt).then(function(r){
+    return r.json().catch(function(){return {};}).then(function(j){
+      if(!r.ok){var e=new Error(j.message||('HTTP '+r.status));e.status=r.status;throw e;}
+      return j;
+    });
+  });
+}
+function explain(e){
+  var s=e&&e.status;
+  if(s===401){return 'GitHub rejected the token. It may have expired. Create a new one and paste it again.';}
+  if(s===403){return 'The token is not allowed to write to this repository. It needs Contents: Read and write.';}
+  if(s===404){return 'Repository or status.json not found, or the token has no access to it. Check the user, repository and branch.';}
+  if(s===409||s===422){return 'The file changed on GitHub in the meantime. Reload this page and try again.';}
+  return 'Could not reach GitHub ('+((e&&e.message)||'error')+'). Check the connection and try again.';
+}
+
+function paint(){
+  var bs=document.querySelectorAll('#statusbtns button');
+  for(var i=0;i<bs.length;i++){bs[i].setAttribute('aria-pressed',String(bs[i].getAttribute('data-s')===sel));}
+  $('#bornbox').hidden=(sel!=='born');
+}
+function fill(o){
+  o=o||{};base=o;
+  sel=o.status||'waiting';
+  $('#note').value=o.note||'';
+  $('#due').value=o.due||'';
+  var b=o.born||{};
+  $('#bname').value=b.name||'';$('#bat').value=b.at||'';$('#bweight').value=b.weight||'';$('#blength').value=b.length||'';
+  paint();
+}
+function show(editor){
+  $('#setup').hidden=editor;
+  $('#editor').hidden=!editor;
+  $('#previews').hidden=!editor;
+  $('#footer').hidden=!editor;
+}
+function load(){
+  msg('Loading current status…');
+  return api('/contents/status.json?ref='+encodeURIComponent(cfg.branch)+'&t='+Date.now()).then(function(j){
+    sha=j.sha;
+    var o={};try{o=JSON.parse(utf8dec(j.content));}catch(e){}
+    fill(o);show(true);msg('');
+  });
+}
+function connect(){
+  cfg.owner=$('#owner').value.trim();cfg.repo=$('#repo').value.trim();cfg.branch=$('#branch').value.trim()||'main';cfg.token=$('#token').value.trim();
+  if(!cfg.owner||!cfg.repo||!cfg.token){msg('Fill in user, repository and token.');return;}
+  $('#connect').disabled=true;
+  load().then(function(){
+    try{localStorage.setItem(KEY,JSON.stringify(cfg));}catch(e){}
+  }).catch(function(e){msg(explain(e));}).then(function(){$('#connect').disabled=false;});
+}
+
+$('#statusbtns').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('button'):null;if(!b){return;}
+  sel=b.getAttribute('data-s');
+  if(sel==='born'&&!$('#bat').value){$('#bat').value=berlinNow();}
+  paint();
+});
+$('#connect').addEventListener('click',connect);
+$('#signout').addEventListener('click',function(){
+  try{localStorage.removeItem(KEY);}catch(e){}
+  cfg.token='';$('#token').value='';show(false);msg('');
+});
+$('#publish').addEventListener('click',function(){
+  var btn=$('#publish');
+  var next={
+    status:sel,
+    note:$('#note').value.trim(),
+    due:$('#due').value,
+    updated:new Date().toISOString(),
+    born:{name:$('#bname').value.trim(),at:$('#bat').value,weight:$('#bweight').value.trim(),length:$('#blength').value.trim()}
+  };
+  btn.disabled=true;msg('Saving…');
+  api('/contents/status.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'Status: '+next.status,content:utf8enc(JSON.stringify(next,null,2)+'\n'),sha:sha,branch:cfg.branch})})
+    .then(function(j){sha=j.content&&j.content.sha?j.content.sha:sha;base=next;msg('Saved. The public page shows it within about a minute.',true);})
+    .catch(function(e){msg(explain(e));})
+    .then(function(){btn.disabled=false;});
+});
+
+$('#owner').value=cfg.owner;$('#repo').value=cfg.repo;$('#branch').value=cfg.branch||'main';
+if(cfg.token&&cfg.owner&&cfg.repo){load().catch(function(e){show(false);$('#token').value='';msg(explain(e));});}
+else{show(false);}
+})();
+</script>
+</body>
+</html>
