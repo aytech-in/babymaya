@@ -1,7 +1,7 @@
 // Live status for the public page: listens to one Firestore document.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getFirestore, doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-import { firebaseConfig, configured } from './firebase-config.js?v=1793453042';
+import { firebaseConfig, configured } from './firebase-config.js?v=1793453257';
 
 if (configured && !/[?&]preview=/.test(location.search)) {
   const db = getFirestore(initializeApp(firebaseConfig));

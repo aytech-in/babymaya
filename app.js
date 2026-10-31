@@ -98,8 +98,8 @@ function render(st){
   }).join('');
   root.innerHTML=
    '<main class="wrap">'+
-    '<header class="top"><ol class="journey">'+journey+'</ol>'+
-    '<nav class="lang" aria-label="Language">'+['tr','de','en'].map(function(l){return '<button type="button" data-l="'+l+'" aria-pressed="'+(l===lang)+'">'+l.toUpperCase()+'</button>';}).join('')+'</nav></header>'+
+    '<header class="top"><ol class="journey">'+journey+'</ol></header>'+
+    '<nav class="lang" aria-label="Language">'+['tr','de','en'].map(function(l){return '<button type="button" data-l="'+l+'" aria-pressed="'+(l===lang)+'">'+l.toUpperCase()+'</button>';}).join('')+'</nav>'+
     '<div class="duo" aria-hidden="true">'+(window.duoSVG?window.duoSVG(st.status):'')+'</div>'+
     '<section class="hero"><h1>'+words+'</h1><p class="sub">'+esc(sc.p)+'</p>'+nm+welcome+'<div class="chips">'+chips+'</div>'+note+tiles+'</section>'+
    '</main>';
