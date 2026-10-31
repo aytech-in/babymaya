@@ -6,36 +6,30 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 
 /* ---------- copy ---------- */
 var T={
- en:{eyebrow:'Aytekin family · baby update',
-  s:{waiting:{h:'Still waiting for our little girl.',p:'She is taking her sweet time. There is no news yet, and we will update this page the moment there is.'},
-     hospital:{h:'We are at the hospital.',p:'Bag packed, hands held. We will post here the moment she arrives.'},
-     born:{h:'She is here.',p:'Our daughter has arrived. Thank you for every message and all the love.'}},
+ en:{s:{waiting:{h:'Still waiting.',p:'Stay tuned.'},
+     hospital:{h:'We are at the hospital.',p:'Stay tuned.'},
+     born:{h:'Our daughter is here.',p:'Thank you for your messages and kind wishes.'}},
   j:{waiting:'Waiting',hospital:'Hospital',born:'Born'},
   upd:'Updated',note:'A note from us',welcome:'Welcome,',
   b:{name:'Name',at:'Born',weight:'Weight',length:'Length'},
   due:{past:function(n){return n===1?'1 day past the due date':n+' days past the due date';},today:'Due date is today',until:function(n){return n===1?'1 day until the due date':n+' days until the due date';}},
-  hint:function(n){return 'Her name will be '+n+'.';},
-  foot:'Check back any time. We update this page ourselves.'},
- tr:{eyebrow:'Aytekin ailesi · bebek haberi',
-  s:{waiting:{h:'Küçük kızımızı bekliyoruz.',p:'Kendi zamanında gelecek. Henüz yeni bir haber yok, olur olmaz bu sayfayı güncelleyeceğiz.'},
-     hospital:{h:'Hastanedeyiz.',p:'Çanta hazır, eller kenetli. Geldiği an buradan haber vereceğiz.'},
-     born:{h:'Geldi!',p:'Kızımız dünyaya geldi. Her mesaj ve tüm sevginiz için çok teşekkürler.'}},
+  hint:function(n){return 'Her name will be '+n+'.';}},
+ tr:{s:{waiting:{h:'Hâlâ bekliyoruz.',p:'Takipte kalın.'},
+     hospital:{h:'Hastanedeyiz.',p:'Takipte kalın.'},
+     born:{h:'Kızımız doğdu.',p:'İlginiz ve iyi dilekleriniz için teşekkür ederiz.'}},
   j:{waiting:'Bekleyiş',hospital:'Hastane',born:'Doğum'},
   upd:'Güncelleme',note:'Bizden bir not',welcome:'Hoş geldin,',
   b:{name:'İsim',at:'Doğum',weight:'Kilo',length:'Boy'},
   due:{past:function(n){return 'Tahmini tarihten '+n+' gün sonra';},today:'Tahmini doğum tarihi bugün',until:function(n){return 'Tahmini tarihe '+n+' gün var';}},
-  hint:function(n){return 'Adı '+n+' olacak.';},
-  foot:'İstediğiniz zaman tekrar bakabilirsiniz. Sayfayı biz güncelliyoruz.'},
- de:{eyebrow:'Familie Aytekin · Baby-Neuigkeiten',
-  s:{waiting:{h:'Wir warten noch auf unsere Kleine.',p:'Sie lässt sich Zeit. Es gibt noch keine Neuigkeiten. Sobald es soweit ist, steht es hier.'},
-     hospital:{h:'Wir sind im Krankenhaus.',p:'Tasche gepackt, Hände gehalten. Sobald sie da ist, melden wir uns hier.'},
-     born:{h:'Sie ist da!',p:'Unsere Tochter ist auf der Welt. Danke für jede Nachricht und all die Liebe.'}},
+  hint:function(n){return 'Adı '+n+' olacak.';}},
+ de:{s:{waiting:{h:'Wir warten noch.',p:'Bleibt dran.'},
+     hospital:{h:'Wir sind im Krankenhaus.',p:'Bleibt dran.'},
+     born:{h:'Unsere Tochter ist da.',p:'Danke für eure Nachrichten und guten Wünsche.'}},
   j:{waiting:'Warten',hospital:'Klinik',born:'Geboren'},
   upd:'Aktualisiert',note:'Eine Notiz von uns',welcome:'Willkommen,',
   b:{name:'Name',at:'Geboren',weight:'Gewicht',length:'Größe'},
   due:{past:function(n){return n===1?'1 Tag über dem Termin':n+' Tage über dem Termin';},today:'Heute ist der errechnete Termin',until:function(n){return n===1?'Noch 1 Tag bis zum Termin':'Noch '+n+' Tage bis zum Termin';}},
-  hint:function(n){return 'Sie wird '+n+' heißen.';},
-  foot:'Schaut jederzeit wieder vorbei. Wir aktualisieren die Seite selbst.'}
+  hint:function(n){return 'Sie wird '+n+' heißen.';}}
 };
 var LOC={en:'en-GB',tr:'tr-TR',de:'de-DE'};
 var ORDER=['waiting','hospital','born'];
@@ -104,14 +98,15 @@ function render(st){
   }).join('');
   root.innerHTML=
    '<main class="wrap">'+
-    '<header class="top"><div class="eyebrow"><span class="live"></span><span>'+esc(t.eyebrow)+'</span></div>'+
+    '<header class="top"><ol class="journey">'+journey+'</ol>'+
     '<nav class="lang" aria-label="Language">'+['tr','de','en'].map(function(l){return '<button type="button" data-l="'+l+'" aria-pressed="'+(l===lang)+'">'+l.toUpperCase()+'</button>';}).join('')+'</nav></header>'+
+    '<div class="duo" aria-hidden="true">'+(window.duoSVG?window.duoSVG(st.status):'')+'</div>'+
     '<section class="hero"><h1>'+words+'</h1><p class="sub">'+esc(sc.p)+'</p>'+nm+welcome+'<div class="chips">'+chips+'</div>'+note+tiles+'</section>'+
-    '<ol class="journey">'+journey+'</ol>'+
-    '<p class="foot">'+esc(t.foot)+'</p>'+
    '</main>';
 }
 root.addEventListener('click',function(e){
+  var du=e.target.closest?e.target.closest('.duo'):null;
+  if(du){du.classList.remove('boop');void du.offsetWidth;du.classList.add('boop');setTimeout(function(){du.classList.remove('boop');},700);}
   var bt=e.target.closest?e.target.closest('[data-l]'):null;
   if(bt&&T[bt.getAttribute('data-l')]){
     lang=bt.getAttribute('data-l');
