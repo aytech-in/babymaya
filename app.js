@@ -10,7 +10,7 @@ var T={
      hospital:{h:'We are at the hospital.',p:'Stay tuned.'},
      born:{h:'Our daughter is here.',p:'Thank you for your messages and kind wishes.'}},
   j:{waiting:'Waiting',hospital:'Hospital',born:'Born'},
-  upd:'Updated',note:'A note from us',welcome:'Welcome,',
+  upd:'Updated',age:'Her age',u:{d:'d',h:'h',m:'m',s:'s'},note:'A note from us',welcome:'Welcome,',
   b:{name:'Name',at:'Born',weight:'Weight',length:'Length'},
   due:{past:function(n){return n===1?'1 day past the due date':n+' days past the due date';},today:'Due date is today',until:function(n){return n===1?'1 day until the due date':n+' days until the due date';}},
   hint:function(n){return 'Her name will be '+n+'.';}},
@@ -18,7 +18,7 @@ var T={
      hospital:{h:'Hastanedeyiz.',p:'Takipte kalın.'},
      born:{h:'Kızımız doğdu.',p:'İlginiz ve iyi dilekleriniz için teşekkür ederiz.'}},
   j:{waiting:'Bekleyiş',hospital:'Hastane',born:'Doğum'},
-  upd:'Güncelleme',note:'Bizden bir not',welcome:'Hoş geldin,',
+  upd:'Güncelleme',age:'Yaşı',u:{d:'g',h:'sa',m:'dk',s:'sn'},note:'Bizden bir not',welcome:'Hoş geldin,',
   b:{name:'İsim',at:'Doğum',weight:'Kilo',length:'Boy'},
   due:{past:function(n){return 'Tahmini tarihten '+n+' gün sonra';},today:'Tahmini doğum tarihi bugün',until:function(n){return 'Tahmini tarihe '+n+' gün var';}},
   hint:function(n){return 'Adı '+n+' olacak.';}},
@@ -26,7 +26,7 @@ var T={
      hospital:{h:'Wir sind im Krankenhaus.',p:'Bleibt dran.'},
      born:{h:'Unsere Tochter ist da.',p:'Danke für eure Nachrichten und guten Wünsche.'}},
   j:{waiting:'Warten',hospital:'Klinik',born:'Geboren'},
-  upd:'Aktualisiert',note:'Eine Notiz von uns',welcome:'Willkommen,',
+  upd:'Aktualisiert',age:'Alter',u:{d:'T',h:'Std',m:'Min',s:'Sek'},note:'Eine Notiz von uns',welcome:'Willkommen,',
   b:{name:'Name',at:'Geboren',weight:'Gewicht',length:'Größe'},
   due:{past:function(n){return n===1?'1 Tag über dem Termin':n+' Tage über dem Termin';},today:'Heute ist der errechnete Termin',until:function(n){return n===1?'Noch 1 Tag bis zum Termin':'Noch '+n+' Tage bis zum Termin';}},
   hint:function(n){return 'Sie wird '+n+' heißen.';}}
@@ -55,6 +55,20 @@ function fmtBorn(at){
   var d=new Date(at+':00Z');
   if(isNaN(d.getTime())){return at;}
   try{return d.toLocaleString(LOC[lang],{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'UTC'});}catch(e){return at;}
+}
+var BF=null;
+try{BF=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',hourCycle:'h23',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});}catch(e){}
+function berlinOffset(ms){var p={};BF.formatToParts(new Date(ms)).forEach(function(x){p[x.type]=x.value;});return Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second)-ms;}
+function bornMs(at){
+  if(!at){return 0;}
+  var g=Date.parse(at+':00Z');
+  if(isNaN(g)){return 0;}
+  if(!BF){return g-3600000;}
+  try{var r=g-berlinOffset(g);return g-berlinOffset(r);}catch(e){return g-3600000;}
+}
+function fmtAge(ms,t){
+  var s=Math.max(0,Math.floor(ms/1000)),u=t.u,d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);
+  return (d?d+u.d+' ':'')+h+u.h+' '+m+u.m+' '+(s%60)+u.s;
 }
 function relTime(iso){
   var diff=(new Date(iso).getTime()-Date.now())/1000;
@@ -89,7 +103,8 @@ function render(st){
   var tiles='';
   if(st.status==='born'){
     var tl=[['at',fmtBorn(b.at)],['weight',b.weight],['length',b.length]].filter(function(x){return x[1];});
-    if(tl.length){tiles='<div class="tiles">'+tl.map(function(x){return '<div class="tile"><small>'+esc(t.b[x[0]])+'</small><strong>'+esc(x[1])+'</strong></div>';}).join('')+'</div>';}
+    var bm=bornMs(b.at),ageTile=(bm&&bm<=Date.now()+60000)?'<div class="tile age"><small>'+esc(t.age)+'</small><strong id="age">'+esc(fmtAge(Date.now()-bm,t))+'</strong></div>':'';
+    if(tl.length||ageTile){tiles='<div class="tiles">'+ageTile+tl.map(function(x){return '<div class="tile'+(x[0]==='at'?' wide':'')+'"><small>'+esc(t.b[x[0]])+'</small><strong>'+esc(x[1])+'</strong></div>';}).join('')+'</div>';}
   }
   var journey=ORDER.map(function(k,i){
     var c=i<idx?'done':i===idx?'now':'todo';
@@ -114,6 +129,7 @@ root.addEventListener('click',function(e){
     render(view);
   }
 });
+setInterval(function(){var el=$('#age'),m=el&&view.born?bornMs(view.born.at):0;if(m){el.textContent=fmtAge(Date.now()-m,T[lang]);}},1000);
 setInterval(function(){var el=$('#rel');if(el&&view.updated){el.textContent='· '+relTime(view.updated);}},60000);
 
 /* ---------- the sky ---------- */
